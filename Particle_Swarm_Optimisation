@@ -1,0 +1,57 @@
+import random
+
+# 1. Fitness function
+def fitness(x):
+    return x ** 2
+
+# 2. Parameters
+PARTICLES = 10
+W = 0.5
+C1 = 1.5
+C2 = 1.5
+ITERATIONS = 20
+
+# 3. Initialize particles
+positions = [random.uniform(0, 31) for _ in range(PARTICLES)]
+velocities = [random.uniform(-1, 1) for _ in range(PARTICLES)]
+
+# Personal best
+pbest = positions.copy()
+
+# Global best
+gbest = max(pbest, key=fitness)
+
+# 4-6. PSO iterations
+for _ in range(ITERATIONS):
+
+    for i in range(PARTICLES):
+
+        r1 = random.random()
+        r2 = random.random()
+
+        # Update velocity
+        velocities[i] = (
+            W * velocities[i]
+            + C1 * r1 * (pbest[i] - positions[i])
+            + C2 * r2 * (gbest - positions[i])
+        )
+
+        # Update position
+        positions[i] += velocities[i]
+
+        # Keep position within range
+        positions[i] = max(0, min(31, positions[i]))
+
+        # Update personal best
+        if fitness(positions[i]) > fitness(pbest[i]):
+            pbest[i] = positions[i]
+
+    # Update global best
+    best_particle = max(pbest, key=fitness)
+
+    if fitness(best_particle) > fitness(gbest):
+        gbest = best_particle
+
+# 7. Output
+print("Best solution:", round(gbest, 2))
+print("Maximum value:", round(fitness(gbest), 2))
