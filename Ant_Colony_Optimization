@@ -1,0 +1,77 @@
+import math
+import random
+
+cities = [(0, 0), (1, 0), (1, 1), (0, 1)]
+n = len(cities)
+
+dist = [[math.hypot(cities[i][0] - cities[j][0],
+                    cities[i][1] - cities[j][1])
+         for j in range(n)] for i in range(n)]
+
+pher = [[1.0] * n for _ in range(n)]
+
+ants = 4
+alpha = 1
+beta = 2
+rho = 0.5
+iterations = 20
+
+best_route = []
+best_distance = float('inf')
+
+random.seed(1)
+
+for _ in range(iterations):
+    tours = []
+
+    for ant in range(ants):
+        route = [random.randrange(n)]
+
+        while len(route) < n:
+            current = route[-1]
+
+            choices = [i for i in range(n)
+                       if i not in route]
+
+            weights = [
+                pher[current][i] ** alpha *
+                (1 / dist[current][i]) ** beta
+                for i in choices
+            ]
+
+            next_city = random.choices(
+                choices, weights=weights
+            )[0]
+
+            route.append(next_city)
+
+        length = sum(
+            dist[route[i]][route[(i + 1) % n]]
+            for i in range(n)
+        )
+
+        tours.append((route, length))
+
+        if length < best_distance:
+            best_route = route[:]
+            best_distance = length
+
+    # Pheromone evaporation
+    for i in range(n):
+        for j in range(n):
+            pher[i][j] *= (1 - rho)
+
+    # Pheromone deposit
+    for route, length in tours:
+        for i in range(n):
+            a = route[i]
+            b = route[(i + 1) % n]
+
+            pher[a][b] += 1 / length
+            pher[b][a] += 1 / length
+
+print("Best Route:", end=" ")
+print(" -> ".join(map(str, best_route +
+                      [best_route[0]])))
+
+print("Shortest Distance:", round(best_distance, 2))
